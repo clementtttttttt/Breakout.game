@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Emscripten-Generated Code</title>
+    <style>
+      .emscripten { padding-right: 0; display: block;}
+      textarea.emscripten { font-family: monospace; width: 80%; }
+      div.emscripten { text-align: center; }
+      div.emscripten_border { border: 1px solid black; }
+      /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+      canvas.emscripten { border: 0px none; background-color: black; display: inline; height: 100%; width: 100%; }
+	.dpad_buttons {
+		height: 10vh;
+		width: 16vw;
+		font-family: monospace;
+	  background-color: #4CAF50; /* Green */
+		touch-action: none;
+	}
+	.small_buttons {
+		height: 4vh;
+		margin: auto;
+		width: 50%;
+  		text-align: center;
+		font-family: monospace;
+	  background-color: #4CAF50; /* Green */
+		touch-action: none;
+	}
+	.small_pad_buttons {
+		height: 4vh;
+		width: 10vw;
+
+	}
+	.pad_buttons {
+		height: 10vh;
+		width: 16vw;
+
+	}
+	.control {
+		width: 100vw;
+		text-align: center;
+		/*height: 50%;*/
+		touch-action: none;
+	}
+	body {
+  		width: 100%;
+  		height: 100vh;
+		overflow: hidden;
+	}
+	.canvas_div {
+		max-width: 95vw; max-height: 50vh; margin: 0 auto; aspect-ratio: 720/576; 
+	}
+
+      .spinner {
+        height: 50px;
+        width: 50px;
+        margin: 0px auto;
+        -webkit-animation: rotation .8s linear infinite;
+        -moz-animation: rotation .8s linear infinite;
+        -o-animation: rotation .8s linear infinite;
+        animation: rotation 0.8s linear infinite;
+        border-left: 10px solid rgb(0,150,240);
+        border-right: 10px solid rgb(0,150,240);
+        border-bottom: 10px solid rgb(0,150,240);
+        border-top: 10px solid rgb(100,0,200);
+        border-radius: 100%;
+        background-color: rgb(200,100,250);
+      }
+      @-webkit-keyframes rotation {
+        from {-webkit-transform: rotate(0deg);}
+        to {-webkit-transform: rotate(360deg);}
+      }
+      @-moz-keyframes rotation {
+        from {-moz-transform: rotate(0deg);}
+        to {-moz-transform: rotate(360deg);}
+      }
+      @-o-keyframes rotation {
+        from {-o-transform: rotate(0deg);}
+        to {-o-transform: rotate(360deg);}
+      }
+      @keyframes rotation {
+        from {transform: rotate(0deg);}
+        to {transform: rotate(360deg);}
+      }
+
+    </style>
+  </head>
+  <body>
+    <h2>Breakout.</h2>
+    <hr/>
+    <figure style="overflow:visible;" id="spinner"><div class="spinner"></div><center style="margin-top:0.5em"><strong>emscripten</strong></center></figure>
+    <div class="emscripten" id="status">Downloading...</div>
+    <div class="emscripten">
+      <progress value="0" max="100" id="progress" hidden=1></progress>  
+    </div>
+    <div class="emscripten_border canvas_div" id="canvas_div" style="text-align:center;">
+      <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" align=center></canvas>
+    </div>
+    <hr/>
+    <div class="emscripten">
+      <input type="checkbox" id="resize">Resize canvas
+      <input type="checkbox" id="pointerLock" checked>Lock/hide mouse pointer
+      &nbsp;&nbsp;&nbsp;
+      <input type="button" value="Fullscreen" ontouchstart="Module.requestFullscreen(document.getElementById('pointerLock').checked, 
+                                                                                document.getElementById('resize').checked)">
+    </div>
+    
+    <hr/>
+    <details id="conSpoil">
+    <summary style="font-family: sans-serif;">Reveal mobile gamepad</summary>
+    <table class="control" align="left" >
+	<tr>
+	   <td>
+		<div class="pad_buttons"></div>
+	   </td>
+	   <td>
+		<input class="dpad_buttons" id="dhard" type="button" value="EnableAI" ontouchstart="onHD();" />
+	   </td>   
+	   <td>
+	   </td> 
+	</tr>
+	<tr>
+	   <td>
+		<input class="dpad_buttons" id="dleft" type="button" value="Left" ontouchstart="onLHold();" ontouchend="onLUp();" />
+	   </td>
+	   <td>
+		<div class="pad_buttons"></div>
+	   </td>   
+	   <td>
+		<input class="dpad_buttons" id="dright" type="button" value="Right" ontouchstart="onRHold();" ontouchend="onRUp();" />
+	   </td> 
+	</tr>
+	<tr>
+	   <td>
+		<div class="pad_buttons"></div>
+	   </td>
+	   <td>
+		<input class="dpad_buttons" id="dsoft" type="button" value="ServeBall" ontouchstart="onSHold();" ontouchend="onSUp();" />
+	   </td>   
+	   <td>
+		<div class="pad_buttons"></div>
+	   </td> 
+	</tr>
+    </table>
+    </details>
+    <script type='text/javascript'>
+      var statusElement = document.getElementById('status');
+      var progressElement = document.getElementById('progress');
+      var spinnerElement = document.getElementById('spinner');
+
+      var Module = {
+        preRun: [],
+        postRun: [],
+        print: (function() {
+          var element = document.getElementById('output');
+          if (element) element.value = ''; // clear browser cache
+          return function(text) {
+            if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+            // These replacements are necessary if you render to raw HTML
+            //text = text.replace(/&/g, "&amp;");
+            //text = text.replace(/</g, "&lt;");
+            //text = text.replace(/>/g, "&gt;");
+            //text = text.replace('\n', '<br>', 'g');
+            console.log(text);
+            if (element) {
+              element.value += text + "\n";
+              element.scrollTop = element.scrollHeight; // focus on bottom
+            }
+          };
+        })(),
+        canvas: (function() {
+          var canvas = document.getElementById('canvas');
+
+          // As a default initial behavior, pop up an alert when webgl context is lost. To make your
+          // application robust, you may want to override this behavior before shipping!
+          // See http://www.khronos.org/registry/webgl/specs/latest/1.0/#5.15.2
+          canvas.addEventListener("webglcontextlost", function(e) { alert('WebGL context lost. You will need to reload the page.'); e.preventDefault(); }, false);
+
+          return canvas;
+        })(),
+	
+        setStatus: function(text) {
+          if (!Module.setStatus.last) Module.setStatus.last = { time: Date.now(), text: '' };
+          if (text === Module.setStatus.last.text) return;
+          var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+          var now = Date.now();
+          if (m && now - Module.setStatus.last.time < 30) return; // if this is a progress update, skip it if too soon
+          Module.setStatus.last.time = now;
+          Module.setStatus.last.text = text;
+          if (m) {
+            text = m[1];
+            progressElement.value = parseInt(m[2])*100;
+            progressElement.max = parseInt(m[4])*100;
+            progressElement.hidden = false;
+            spinnerElement.hidden = false;
+          } else {
+            progressElement.value = null;
+            progressElement.max = null;
+            progressElement.hidden = true;
+            if (!text) spinnerElement.hidden = true;
+          }
+          statusElement.innerHTML = text;
+        },
+        totalDependencies: 0,
+        monitorRunDependencies: function(left) {
+          this.totalDependencies = Math.max(this.totalDependencies, left);
+          Module.setStatus(left ? 'Preparing... (' + (this.totalDependencies-left) + '/' + this.totalDependencies + ')' : 'All downloads complete.');
+        }
+      };
+	document.addEventListener("keydown",function(e){
+		var c=document.getElementById("canvas");
+		var ec=new KeyboardEvent('keydown',{'key': e.key, 'code': e.code, 'keyCode': e.keyCode});		
+		c.dispatchEvent(ec);
+	});
+	document.addEventListener("keyup",function(e){
+		var c=document.getElementById("canvas");
+		var ec=new KeyboardEvent('keyup',{'key': e.key, 'code': e.code, 'keyCode': e.keyCode});
+		c.dispatchEvent(ec);
+	});
+	var oldCHeight;
+	document.getElementById("conSpoil").addEventListener("toggle",function(){
+		var cs=document.getElementById("conSpoil");
+		var c=document.getElementById("canvas");
+				
+		if(cs.open){
+			oldCHeight = window.getComputedStyle(c).getPropertyValue('maxHeight');
+			console.log(oldCHeight);
+			c.style.maxHeight = "90vh"; 
+		} else {
+			 c.style.maxHeight = oldCHeight;
+		}
+	});
+	function onLHold(){
+		var c=document.getElementById("canvas");
+		c.focus();
+		
+		c.dispatchEvent(new KeyboardEvent('keydown', {'key': 'a', 'code': 'KeyA', 'keyCode': 65}));
+
+	}
+	function onLUp(){
+		var c=document.getElementById("canvas");
+		c.focus();
+		
+		c.dispatchEvent(new KeyboardEvent('keyup', {'key': 'a', 'code': 'KeyA', 'keyCode': 65}));
+
+	}
+	function onRHold(){
+		var c=document.getElementById("canvas");
+		c.focus();
+		
+		c.dispatchEvent(new KeyboardEvent('keydown', {'key': 'd', 'code': 'KeyD', 'keyCode': 68}));
+
+	}
+	function onRUp(){
+		var c=document.getElementById("canvas");
+		c.focus();
+		
+		c.dispatchEvent(new KeyboardEvent('keyup', {'key': 'd', 'code': 'KeyD', 'keyCode': 68}));
+
+	}
+	function onSHold(){
+		var c=document.getElementById("canvas");
+		c.focus();
+		
+		c.dispatchEvent(new KeyboardEvent('keydown', {'key': 's', 'code': 'KeyS', 'keyCode': 83}));
+
+	}
+	function onSUp(){
+		var c=document.getElementById("canvas");
+		c.focus();
+		
+		c.dispatchEvent(new KeyboardEvent('keyup', {'key': 's', 'code': 'KeyS', 'keyCode': 83}));
+
+	}
+	function onHD(){
+		var c=document.getElementById("canvas");
+		c.focus();
+		
+		c.dispatchEvent(new KeyboardEvent('keydown', {'key': ' ', 'code': 'KeySpace', 'keyCode': 32}));
+		c.dispatchEvent(new KeyboardEvent('keyup', {'key': ' ', 'code': 'KeySpace', 'keyCode': 32}));
+	}
+	function onRC(){
+		var c=document.getElementById("canvas");
+		c.focus();
+		
+		c.dispatchEvent(new KeyboardEvent('keydown', {'key': 'w', 'code': 'KeyW', 'keyCode': 87}));
+		c.dispatchEvent(new KeyboardEvent('keyup', {'key': 'w', 'code': 'KeyW', 'keyCode': 87}));
+	}	
+	function onLC(){
+		var c=document.getElementById("canvas");
+		c.focus();
+		
+		c.dispatchEvent(new KeyboardEvent('keydown', {'key': 'q', 'code': 'KeyQ', 'keyCode': 81}));
+		c.dispatchEvent(new KeyboardEvent('keyup', {'key': 'q', 'code': 'KeyQ', 'keyCode': 81}));
+	}
+	function onPause(){
+		var c=document.getElementById("canvas");
+		c.focus();
+		
+		c.dispatchEvent(new KeyboardEvent('keydown', {'key': '', 'code': 'KeyF1', 'keyCode': 112}));
+		c.dispatchEvent(new KeyboardEvent('keyup', {'key': '', 'code': 'KeyF1', 'keyCode': 112}));
+	}
+	function onMute(){
+		var c=document.getElementById("canvas");
+		c.focus();
+		
+		c.dispatchEvent(new KeyboardEvent('keydown', {'key': 'm', 'code': 'KeyM', 'keyCode': 77}));
+		c.dispatchEvent(new KeyboardEvent('keyup', {'key': 'm', 'code': 'KeyM', 'keyCode': 77}));
+	}
+	function onRetry(){
+		var c=document.getElementById("canvas");
+		c.focus();
+		
+		c.dispatchEvent(new KeyboardEvent('keydown', {'key': 'h', 'code': 'KeyM', 'keyCode': 72}));
+		c.dispatchEvent(new KeyboardEvent('keyup', {'key': 'h', 'code': 'KeyM', 'keyCode': 72}));
+	}
+      Module.setStatus('Downloading...');
+      window.onerror = function(err) {
+        Module.setStatus('Exception thrown, see JavaScript console');
+        spinnerElement.style.display = 'none';
+        Module.setStatus = function(text) {
+          if (text) {
+		alert("Exception details: " + err);
+	  }
+        };
+      };
+    </script>
+    {{{ SCRIPT }}}
+  </body>
+</html>
