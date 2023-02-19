@@ -447,6 +447,7 @@ void game_tick(){
                     by=504;
                     bxd=-3;
                     byd=-6;
+                    s_beep(100,C5);
                 }
             }
             break;
