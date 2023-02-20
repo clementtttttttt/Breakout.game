@@ -442,6 +442,12 @@ void game_tick(){
                 ai_enable = !ai_enable;
             }
             if(e.key.keysym.sym == SDLK_s){
+                if(balls == 0){
+                    balls = 5;
+                    score = 0;
+                    games = 0;
+                    init_game_board();
+                }
                 if(balls && ((bx <=0  || by <=0 )|| (bx >= 720 || by >= 576))){
                     --balls;
                     bx=650;
