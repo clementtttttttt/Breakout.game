@@ -216,10 +216,7 @@ void SDL::draw()
     sprintf(s,"%02d",games);
     drawText(m_renderer,s, 560,0,50, {0x84,0x84,0x84,0xff}, {0,0,0,0},1);
 
-    if ((score % 432) == 0&& score !=0){
-        init_game_board();
-        ++games;
-    }
+
 
     // Show the window
     SDL_RenderPresent( m_renderer );
@@ -371,6 +368,10 @@ void ball_tick(){
         bxd = (px-bx)/-6;
         s_beep(120,D4);
         byd = -byd;
+       if ((score % 432) == 0&& score !=0){
+        init_game_board();
+        ++games;
+        }
     }
 
     bx+=bxd;
