@@ -274,7 +274,6 @@ void ai_calc_dest(){
 }
 
 
-int times;
 
 void handle_colours(int x,int y){
 
@@ -416,13 +415,13 @@ int ai_r,ai_l, ai_enable = 0;
 
 void ai_tick(){
 
-        if(px < (dest-2)){
+        if(px < (dest-10)){
 
             ai_r = 1;
         }
         else ai_r = 0;
 
-        if((px) > dest+2){
+        if((px) > dest+10){
 
             ai_l = 1;
 

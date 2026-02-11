@@ -115,20 +115,20 @@
 		<div class="pad_buttons"></div>
 	   </td>
 	   <td>
-		<input class="dpad_buttons" id="dhard" type="button" value="EnableAI" ontouchstart="onHD();" />
+		<input class="dpad_buttons" id="dhard" type="button" value="EnableAI(r)" ontouchstart="onHD();" />
 	   </td>   
 	   <td>
 	   </td> 
 	</tr>
 	<tr>
 	   <td>
-		<input class="dpad_buttons" id="dleft" type="button" value="Left" ontouchstart="onLHold();" ontouchend="onLUp();" />
+		<input class="dpad_buttons" id="dleft" type="button" value="Left(w)" ontouchstart="onLHold();" ontouchend="onLUp();" />
 	   </td>
 	   <td>
 		<div class="pad_buttons"></div>
 	   </td>   
 	   <td>
-		<input class="dpad_buttons" id="dright" type="button" value="Right" ontouchstart="onRHold();" ontouchend="onRUp();" />
+		<input class="dpad_buttons" id="dright" type="button" value="Right(d)" ontouchstart="onRHold();" ontouchend="onRUp();" />
 	   </td> 
 	</tr>
 	<tr>
@@ -136,7 +136,7 @@
 		<div class="pad_buttons"></div>
 	   </td>
 	   <td>
-		<input class="dpad_buttons" id="dsoft" type="button" value="ServeBall" ontouchstart="onSHold();" ontouchend="onSUp();" />
+		<input class="dpad_buttons" id="dsoft" type="button" value="ServeBall(s)" ontouchstart="onSHold();" ontouchend="onSUp();" />
 	   </td>   
 	   <td>
 		<div class="pad_buttons"></div>
@@ -277,8 +277,8 @@
 		var c=document.getElementById("canvas");
 		c.focus();
 		
-		c.dispatchEvent(new KeyboardEvent('keydown', {'key': ' ', 'code': 'KeySpace', 'keyCode': 32}));
-		c.dispatchEvent(new KeyboardEvent('keyup', {'key': ' ', 'code': 'KeySpace', 'keyCode': 32}));
+		c.dispatchEvent(new KeyboardEvent('keydown', {'key': 'r', 'code': 'KeyR', 'keyCode': 82}));
+		c.dispatchEvent(new KeyboardEvent('keyup', {'key': 'r', 'code': 'KeyR', 'keyCode': 82}));
 	}
 	function onRC(){
 		var c=document.getElementById("canvas");
